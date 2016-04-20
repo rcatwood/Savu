@@ -3,7 +3,8 @@
 module load global/cluster
 module load python/anaconda-savu
 source activate savu_mpi1
-#export PYTHONPATH=$PYTHONPATH:/home/clb02321/DAWN_stable/FastXRF/src/
+echo "savuhome is" $SAVUHOME 
+echo "python path is" $PYTHONPATH
 
 savupath=$1
 datafile=$2
@@ -18,7 +19,7 @@ filename=$savupath/savu/tomo_recon.py
 UNIQHOSTS=${TMPDIR}/machines-u
 awk '{print $1 }' ${PE_HOSTFILE} | uniq > ${UNIQHOSTS}
 uniqslots=$(wc -l <${UNIQHOSTS})
-echo "number of uniq hosts: ${uniqslots}"
+echo "number of unique hosts: ${uniqslots}"
 echo "running on these hosts:"
 cat ${UNIQHOSTS}
 
@@ -37,5 +38,5 @@ mpirun -np ${processes} \
        -mca orte_forward_job_control 1 \
        -x LD_LIBRARY_PATH \
        --hostfile ${UNIQHOSTS} \
-       python $filename $datafile $processfile $outfile -n $CPUs -v
+       python $filename $datafile $processfile $outfile -n $CPUs -D $DATESTRING -v
 

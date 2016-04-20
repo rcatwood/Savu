@@ -37,6 +37,8 @@ def __option_parser():
                       default="CPU0")
     parser.add_option("-t", "--transport", dest="transport",
                       help="Set the transport mechanism", default="hdf5")
+    parser.add_option("-D", "--datestring", dest="datestring",
+                      help="Set the date string" )
     parser.add_option("-f", "--folder", dest="folder",
                       help="Override the output folder")
     parser.add_option("-d", "--tmp", dest="temp_dir",
@@ -91,7 +93,7 @@ def _set_options(opt, args):
     options["quiet"] = opt.quiet
     options["data_file"] = args[0]
     options["process_file"] = args[1]
-    options["out_path"] = set_output_folder(args[0], args[2], opt.folder)
+    options["out_path"] = set_output_folder(args[0], args[2], opt.folder,opt.datestring)
     if opt.temp_dir:
         options["inter_path"] = opt.temp_dir
     else:
@@ -103,17 +105,20 @@ def _set_options(opt, args):
     return options
 
 
-def set_output_folder(in_file, out_path, set_folder):
+def set_output_folder(in_file, out_path, set_folder,set_datestring):
     from mpi4py import MPI
     import time
     if not set_folder:
-        MPI.COMM_WORLD.barrier()
-        timestamp = time.strftime("%Y%m%d%H%M%S")
-        MPI.COMM_WORLD.barrier()
-        name = os.path.basename(in_file.split('.')[-2])
-        folder = os.path.join(out_path, ('_'.join([timestamp, name])))
+       if not set_datestring:
+           MPI.COMM_WORLD.barrier()
+           timestamp = time.strftime("%Y%m%d%H%M%S")
+           MPI.COMM_WORLD.barrier()
+       else:
+           timestamp=set_datestring
+       name = os.path.basename(in_file.split('.')[-2])
+       folder = os.path.join(out_path, ('_'.join([timestamp, name])))
     else:
-        folder = os.path.join(out_path, set_folder)
+       folder = os.path.join(out_path, set_folder)
     print "The output folder is", folder
     if MPI.COMM_WORLD.rank == 0:
         if not os.path.exists(folder):
